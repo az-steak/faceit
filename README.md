@@ -49,6 +49,10 @@ Then train the model, e.g.:
 ```
 python faceit.py train fallon_to_oliver
 ```
+You can also specify a batch size to use for training (default 512), can be useful if your GPU doesn't have enough memory
+```
+python faceit.py train fallon_to_oliver --batch-size 256
+```
 
 Finally, convert any video that is stored on disk, e.g.:
 ```
