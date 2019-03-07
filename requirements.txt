@@ -1,3 +1,4 @@
+cmake
 pathlib==1.0.1
 scandir==1.6
 h5py==2.7.1
@@ -7,13 +8,16 @@ dlib
 face_recognition
 youtube-dl
 moviepy
-numpy==1.14.0
+numpy==1.16.0
 tqdm
 pydot
 graphviz
+imageio==2.4.1
+requests
+tensorflow-gpu==1.5.0
 
 
 # Required but installed using other means.
 #
 #opencv-python==3.4.0
-#tensorflow-gpu==1.5.0
+#also need ImageMagick, download at => http://www.imagemagick.org/download/binaries/
