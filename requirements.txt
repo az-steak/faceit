@@ -20,4 +20,6 @@ tensorflow-gpu==1.5.0
 # Required but installed using other means.
 #
 #opencv-python==3.4.0
+#NVidia Cuda 9.0
+#cuDNN 7.0 for Cuda 9.0 at https://developer.nvidia.com/rdp/cudnn-download
 #also need ImageMagick, download at => http://www.imagemagick.org/download/binaries/
