@@ -346,23 +346,15 @@ class FaceSwapInterface:
 
 
 if __name__ == '__main__':
-    faceit = FaceIt('fallon_to_oliver', 'fallon', 'oliver')
-    faceit.add_video('oliver', 'oliver_trumpcard.mp4', 'https://www.youtube.com/watch?v=JlxQ3IUWT0I')
-    faceit.add_video('oliver', 'oliver_taxreform.mp4', 'https://www.youtube.com/watch?v=g23w7WPSaU8')
-    faceit.add_video('oliver', 'oliver_zazu.mp4', 'https://www.youtube.com/watch?v=Y0IUPwXSQqg')
-    faceit.add_video('oliver', 'oliver_pastor.mp4', 'https://www.youtube.com/watch?v=mUndxpbufkg')
-    faceit.add_video('oliver', 'oliver_cookie.mp4', 'https://www.youtube.com/watch?v=H916EVndP_A')
-    faceit.add_video('oliver', 'oliver_lorelai.mp4', 'https://www.youtube.com/watch?v=G1xP2f1_1Jg')
-    faceit.add_video('fallon', 'fallon_mom.mp4', 'https://www.youtube.com/watch?v=gjXrm2Q-te4')
-    faceit.add_video('fallon', 'fallon_charlottesville.mp4', 'https://www.youtube.com/watch?v=E9TJsw67OmE')
-    faceit.add_video('fallon', 'fallon_dakota.mp4', 'https://www.youtube.com/watch?v=tPtMP_NAMz0')
-    faceit.add_video('fallon', 'fallon_single.mp4', 'https://www.youtube.com/watch?v=xfFVuXN0FSI')
-    faceit.add_video('fallon', 'fallon_sesamestreet.mp4', 'https://www.youtube.com/watch?v=SHogg7pJI_M')
-    faceit.add_video('fallon', 'fallon_emmastone.mp4', 'https://www.youtube.com/watch?v=bLBSoC_2IY8')
-    faceit.add_video('fallon', 'fallon_xfinity.mp4', 'https://www.youtube.com/watch?v=7JwBBZRLgkM')
-    faceit.add_video('fallon', 'fallon_bank.mp4', 'https://www.youtube.com/watch?v=q-0hmYHWVgE')
-    FaceIt.add_model(faceit)
+    faceit = FaceIt('trump_to_norman', 'trump', 'norman')
+    #faceit.add_video('trump', 'trump_vietnam.mp4', 'https://www.youtube.com/watch?v=F2PiuixG0NY') # 30min long video, will take a looooot of time to process
     
+    faceit.add_video('trump', 'trump_face.mp4', 'https://www.youtube.com/watch?v=KWcmZ8hozvU')
+    #faceit.add_video('trump', 'trump_JimmyK.mp4', 'https://www.youtube.com/watch?v=-GBnxfTkICs')
+    #faceit.add_video('norman', 'norman_bilingues.mp4', 'https://www.youtube.com/watch?v=_N4DMW5NWsE')
+    #faceit.add_video('norman', 'norman_insomn.mp4', 'https://www.youtube.com/watch?v=3SpkRZ5yN_I')
+    faceit.add_video('norman', 'norman_birthday.mp4', 'https://www.youtube.com/watch?v=Rzcw_cmB5-c')
+    FaceIt.add_model(faceit)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('task', choices = ['preprocess', 'train', 'convert'])
