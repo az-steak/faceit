@@ -23,6 +23,12 @@ from lib.faces_detect import detect_faces
 from plugins.PluginLoader import PluginLoader
 from lib.FaceFilter import FaceFilter
 
+
+
+DEFAULT_BATCH_SIZE = 512
+
+
+
 class FaceIt:
     VIDEO_PATH = 'data/videos'
     PERSON_PATH = 'data/persons'
@@ -82,6 +88,7 @@ class FaceIt:
         return self._people[self._person_a]['videos'] + self._people[self._person_b]['videos']
 
     def _process_media(self, func, media_type = 'videos'):
+        print('Media type used for preprocess : ' + media_type)
         for person in self._people:
             for video in self._people[person][media_type]:
                 func(person, video)
@@ -109,7 +116,7 @@ class FaceIt:
 
     def _fetch_video(self, person, video):
         options = {
-            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio',
+            'format': 'best[height<=?1080]/bestvideo+bestaudio',
             'outtmpl': os.path.join(FaceIt.VIDEO_PATH, video['name']),
             'merge_output_format' : 'mp4'
         }
@@ -178,7 +185,18 @@ class FaceIt:
             face_file_path = os.path.join(os.getcwd(), self._video_faces_path(video), face_file)
             os.symlink(face_file_path, target_file)
 
-    def train(self, use_gan = False):
+    def is_power_of_two(self, a):
+        if (a == 0):
+            return False
+        while (a != 1):
+            if (a % 2 != 0):
+                return False
+            a = a // 2
+        return True
+
+    def train(self, batch_size = DEFAULT_BATCH_SIZE, use_gan = False):
+        assert self.is_power_of_two(batch_size), "Invalid batch-size (%r), batch-size must be a power of two." % batch_size
+
         # Setup directory structure for model, and create one director for person_a faces, and
         # another for person_b faces containing symlinks to all faces.
         if not os.path.exists(self._model_path(use_gan)):
@@ -191,7 +209,11 @@ class FaceIt:
             os.makedirs(self._model_person_data_path(person))
         self._process_media(self._symlink_faces_for_model)
 
-        self._faceswap.train(self._model_person_data_path(self._person_a), self._model_person_data_path(self._person_b), self._model_path(use_gan), use_gan)
+        self._faceswap.train(self._model_person_data_path(self._person_a), self._model_person_data_path(self._person_b), self._model_path(use_gan), batch_size, use_gan)
+
+    def check_output_directory(self):
+        if not os.path.isdir(self.OUTPUT_PATH):
+            os.mkdir(self.OUTPUT_PATH)
 
     def convert(self, video_file, swap_model = False, duration = None, start_time = None, use_gan = False, face_filter = False, photos = True, crop_x = None, width = None, side_by_side = False):
         # Magic incantation to not have tensorflow blow up with an out of memory error.
@@ -308,14 +330,14 @@ class FaceSwapInterface:
         args_str = args_str.format(input_dir, output_dir, filter_path)
         self._run_script(args_str)
 
-    def train(self, input_a_dir, input_b_dir, model_dir, gan = False):
+    def train(self, input_a_dir, input_b_dir, model_dir, batch_size = DEFAULT_BATCH_SIZE, gan = False):
         model_type = "Original"
         if gan:
             model_type = "GAN"
         train = TrainingProcessor(
             self._subparser, "train", "This command trains the model for the two faces A and B.")
         args_str = "train --input-A {} --input-B {} --model-dir {} --trainer {} --batch-size {} --write-image"
-        args_str = args_str.format(input_a_dir, input_b_dir, model_dir, model_type, 512)
+        args_str = args_str.format(input_a_dir, input_b_dir, model_dir, model_type, batch_size)
         self._run_script(args_str)
 
     def _run_script(self, args_str):
@@ -324,21 +346,30 @@ class FaceSwapInterface:
 
 
 if __name__ == '__main__':
-    faceit = FaceIt('fallon_to_oliver', 'fallon', 'oliver')
-    faceit.add_video('oliver', 'oliver_trumpcard.mp4', 'https://www.youtube.com/watch?v=JlxQ3IUWT0I')
-    faceit.add_video('oliver', 'oliver_taxreform.mp4', 'https://www.youtube.com/watch?v=g23w7WPSaU8')
-    faceit.add_video('oliver', 'oliver_zazu.mp4', 'https://www.youtube.com/watch?v=Y0IUPwXSQqg')
-    faceit.add_video('oliver', 'oliver_pastor.mp4', 'https://www.youtube.com/watch?v=mUndxpbufkg')
-    faceit.add_video('oliver', 'oliver_cookie.mp4', 'https://www.youtube.com/watch?v=H916EVndP_A')
-    faceit.add_video('oliver', 'oliver_lorelai.mp4', 'https://www.youtube.com/watch?v=G1xP2f1_1Jg')
-    faceit.add_video('fallon', 'fallon_mom.mp4', 'https://www.youtube.com/watch?v=gjXrm2Q-te4')
-    faceit.add_video('fallon', 'fallon_charlottesville.mp4', 'https://www.youtube.com/watch?v=E9TJsw67OmE')
-    faceit.add_video('fallon', 'fallon_dakota.mp4', 'https://www.youtube.com/watch?v=tPtMP_NAMz0')
-    faceit.add_video('fallon', 'fallon_single.mp4', 'https://www.youtube.com/watch?v=xfFVuXN0FSI')
-    faceit.add_video('fallon', 'fallon_sesamestreet.mp4', 'https://www.youtube.com/watch?v=SHogg7pJI_M')
-    faceit.add_video('fallon', 'fallon_emmastone.mp4', 'https://www.youtube.com/watch?v=bLBSoC_2IY8')
-    faceit.add_video('fallon', 'fallon_xfinity.mp4', 'https://www.youtube.com/watch?v=7JwBBZRLgkM')
-    faceit.add_video('fallon', 'fallon_bank.mp4', 'https://www.youtube.com/watch?v=q-0hmYHWVgE')
+    #faceit = FaceIt('fallon_to_oliver', 'fallon', 'oliver')
+    #faceit.add_video('oliver', 'oliver_trumpcard.mp4', 'https://www.youtube.com/watch?v=JlxQ3IUWT0I')
+    #faceit.add_video('oliver', 'oliver_taxreform.mp4', 'https://www.youtube.com/watch?v=g23w7WPSaU8')
+    #faceit.add_video('oliver', 'oliver_zazu.mp4', 'https://www.youtube.com/watch?v=Y0IUPwXSQqg')
+    #faceit.add_video('oliver', 'oliver_pastor.mp4', 'https://www.youtube.com/watch?v=mUndxpbufkg')
+    #faceit.add_video('oliver', 'oliver_cookie.mp4', 'https://www.youtube.com/watch?v=H916EVndP_A')
+    #faceit.add_video('oliver', 'oliver_lorelai.mp4', 'https://www.youtube.com/watch?v=G1xP2f1_1Jg')
+    #faceit.add_video('fallon', 'fallon_mom.mp4', 'https://www.youtube.com/watch?v=gjXrm2Q-te4')
+    #faceit.add_video('fallon', 'fallon_charlottesville.mp4', 'https://www.youtube.com/watch?v=E9TJsw67OmE')
+    #faceit.add_video('fallon', 'fallon_dakota.mp4', 'https://www.youtube.com/watch?v=tPtMP_NAMz0')
+    #faceit.add_video('fallon', 'fallon_single.mp4', 'https://www.youtube.com/watch?v=xfFVuXN0FSI')
+    #faceit.add_video('fallon', 'fallon_sesamestreet.mp4', 'https://www.youtube.com/watch?v=SHogg7pJI_M')
+    #faceit.add_video('fallon', 'fallon_emmastone.mp4', 'https://www.youtube.com/watch?v=bLBSoC_2IY8')
+    #faceit.add_video('fallon', 'fallon_xfinity.mp4', 'https://www.youtube.com/watch?v=7JwBBZRLgkM')
+    #faceit.add_video('fallon', 'fallon_bank.mp4', 'https://www.youtube.com/watch?v=q-0hmYHWVgE')
+    
+    faceit = FaceIt('trump_to_norman', 'trump', 'norman')
+    #faceit.add_video('trump', 'trump_vietnam.mp4', 'https://www.youtube.com/watch?v=F2PiuixG0NY')
+    
+    faceit.add_video('trump', 'trump_face.mp4', 'https://www.youtube.com/watch?v=KWcmZ8hozvU')
+    faceit.add_video('trump', 'trump_JimmyK.mp4', 'https://www.youtube.com/watch?v=-GBnxfTkICs')
+    faceit.add_video('norman', 'norman_bilingues.mp4', 'https://www.youtube.com/watch?v=_N4DMW5NWsE')
+    faceit.add_video('norman', 'norman_insomn.mp4', 'https://www.youtube.com/watch?v=3SpkRZ5yN_I')
+    faceit.add_video('norman', 'norman_birthday.mp4', 'https://www.youtube.com/watch?v=Rzcw_cmB5-c')
     FaceIt.add_model(faceit)
 
     parser = argparse.ArgumentParser()
@@ -352,7 +383,8 @@ if __name__ == '__main__':
     parser.add_argument('--start-time', type = int, default = 0)
     parser.add_argument('--crop-x', type = int, default = None)
     parser.add_argument('--width', type = int, default = None)
-    parser.add_argument('--side-by-side', action = 'store_true', default = False)    
+    parser.add_argument('--side-by-side', action = 'store_true', default = False)
+    parser.add_argument('--batch-size', type = int, default = DEFAULT_BATCH_SIZE)
     args = parser.parse_args()
 
     faceit = FaceIt.MODELS[args.model]
@@ -360,8 +392,9 @@ if __name__ == '__main__':
     if args.task == 'preprocess':
         faceit.preprocess()
     elif args.task == 'train':
-        faceit.train()
+        faceit.train(args.batch_size)
     elif args.task == 'convert':
+        faceit.check_output_directory()
         if not args.video:
             print('Need a video to convert. Some ideas: {}'.format(", ".join([video['name'] for video in faceit.all_videos()])))
         else:
