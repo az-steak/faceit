@@ -350,9 +350,9 @@ if __name__ == '__main__':
     #faceit.add_video('trump', 'trump_vietnam.mp4', 'https://www.youtube.com/watch?v=F2PiuixG0NY') # 30min long video, will take a looooot of time to process
     
     faceit.add_video('trump', 'trump_face.mp4', 'https://www.youtube.com/watch?v=KWcmZ8hozvU')
-    #faceit.add_video('trump', 'trump_JimmyK.mp4', 'https://www.youtube.com/watch?v=-GBnxfTkICs')
-    #faceit.add_video('norman', 'norman_bilingues.mp4', 'https://www.youtube.com/watch?v=_N4DMW5NWsE')
-    #faceit.add_video('norman', 'norman_insomn.mp4', 'https://www.youtube.com/watch?v=3SpkRZ5yN_I')
+    faceit.add_video('trump', 'trump_JimmyK.mp4', 'https://www.youtube.com/watch?v=-GBnxfTkICs')
+    faceit.add_video('norman', 'norman_bilingues.mp4', 'https://www.youtube.com/watch?v=_N4DMW5NWsE')
+    faceit.add_video('norman', 'norman_insomn.mp4', 'https://www.youtube.com/watch?v=3SpkRZ5yN_I')
     faceit.add_video('norman', 'norman_birthday.mp4', 'https://www.youtube.com/watch?v=Rzcw_cmB5-c')
     FaceIt.add_model(faceit)
 
